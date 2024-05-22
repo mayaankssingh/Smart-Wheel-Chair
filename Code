@@ -1,0 +1,142 @@
+#define IO_USERNAME  "Mayankkkkkkkk"
+#define IO_KEY "aio_lmfr22jwr0IyG0UtASxhCpFCDjr1"
+
+/* WIFI Configuration **/
+
+#define WIFI_SSID       "Aalelele"
+#define WIFI_PASS       "11112222"
+
+#include "AdafruitIO_WiFi.h"
+AdafruitIO_WiFi io(IO_USERNAME, IO_KEY, WIFI_SSID, WIFI_PASS);
+
+/* Main Program Starts Here **/
+#include <ESP8266WiFi.h>
+#include <AdafruitIO.h>
+#include <Adafruit_MQTT.h>
+#include <ArduinoHttpClient.h>
+
+// These are used to set the direction of the bridge driver.
+#define MOTORB_1 D4 //IN3
+#define MOTORB_2 D5 //IN4
+#define MOTORA_1 D6 //IN1
+#define MOTORA_2 D7
+
+String cmd;
+
+AdafruitIO_Feed *command = io.feed("Voice_Command"); // Set up the 'command' feed
+
+// SETUP
+void stop(){
+  digitalWrite(D4,LOW);
+  digitalWrite(D5,LOW);
+  digitalWrite(D6,LOW);
+  digitalWrite(D7,LOW);
+  delay(5000);
+ 
+}
+void setup()
+{
+  pinMode(MOTORA_1, OUTPUT);
+  pinMode(MOTORA_2, OUTPUT);
+  pinMode(MOTORB_1, OUTPUT);
+  pinMode(MOTORB_2, OUTPUT);
+  Serial.begin(9600);
+
+  // connect to io.adafruit.com
+  Serial.print("Connecting to Adafruit IO");
+  io.connect();
+  command->onMessage(handleMessage);  
+
+  while(io.status() < AIO_CONNECTED) {
+    Serial.print(".");
+    delay(50);
+  }
+
+  // we are connected
+  Serial.println();
+  Serial.println(io.statusText());
+}
+
+// MAIN CODE
+void loop()
+{
+  io.run();
+}
+
+// this part of the code runs whenever there's a new message on Adafruit.io feed
+void handleMessage(AdafruitIO_Data *data) {
+ 
+  String commandStr = data->toString(); // store the incoming commands in a string
+ 
+  // received message
+  Serial.print("received <- ");
+  Serial.println(commandStr);
+
+ 
+
+  // separate text and number ingredients
+//  for (int i = 0; i < commandStr.length(); i++) {
+//    if (commandStr.substring(i, i+1) == ":") {
+//      cmd = commandStr.substring(0, i);
+//      angle = commandStr.substring(i+1).toInt();
+//      break;
+//    }
+//  }
+
+  // print command
+//  Serial.println(cmd);
+//  Serial.println(angle);
+
+  Serial.println(commandStr);
+  // perform movements
+  // LEFT
+  if (commandStr=="left" || commandStr=="Left"){   
+    Serial.println(2055); 
+    digitalWrite(D4,LOW);
+    digitalWrite(D5,HIGH);
+    digitalWrite(D6,LOW);
+    digitalWrite(D7,LOW);
+    delay(10000);
+    stop();
+  }
+  // RIGHT
+  if (commandStr=="right" || commandStr=="Right" ){  
+    Serial.println(205);   
+    digitalWrite(D4,LOW);
+    digitalWrite(D5,LOW);
+    digitalWrite(D6,HIGH);
+    digitalWrite(D7,LOW);
+    delay(10000);
+    stop();
+  }
+  // FORWARD
+  if (commandStr=="front" || commandStr=="Front"){    
+    Serial.println(205); 
+    digitalWrite(D4,LOW);
+    digitalWrite(D5,HIGH);
+    digitalWrite(D6,HIGH);
+    digitalWrite(D7,LOW);
+    delay(15000);
+    stop();
+  }
+  // BACK
+  if (commandStr=="move back" || commandStr=="move back"){  
+    Serial.println(2000);   
+    digitalWrite(D4,HIGH);
+    digitalWrite(D5,LOW);
+    digitalWrite(D6,LOW);
+    digitalWrite(D7,HIGH);
+    delay(15000);
+    stop();
+  }
+    // STOP
+  if (commandStr=="back" || commandStr=="Back"){  
+    Serial.println(2000);   
+    digitalWrite(D4,HIGH);
+    digitalWrite(D5,HIGH);
+    digitalWrite(D6,HIGH);
+    digitalWrite(D7,HIGH);
+    delay(5000);
+    stop();
+  }    
+}
